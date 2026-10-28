@@ -30,7 +30,6 @@ st.session_state.setdefault("b", 0.0)
 
 
 def desde_texto():
-    """Alternativa: el usuario escribe la fórmula como texto; se valida y se refleja en el editor."""
     texto = st.session_state.texto_alt.strip()
     if not texto:
         return
