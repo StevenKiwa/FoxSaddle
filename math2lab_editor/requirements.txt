@@ -1,0 +1,6 @@
+streamlit>=1.36
+plotly>=5.20
+numpy
+sympy
+openai>=1.40
+streamlit-js-eval
