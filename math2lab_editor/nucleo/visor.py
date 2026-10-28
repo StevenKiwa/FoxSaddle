@@ -3,6 +3,8 @@
 La barra de herramientas de Plotly está oculta: los únicos controles son «Pantalla completa», «Decimales», «Curvas de
 nivel» (solo en 3D) y los botones de lupa (+ / −) de la esquina superior derecha. En pantallas táctiles el pellizco con
 dos dedos se bloquea, porque hacía que el zoom «se volviera loco»: el zoom se hace con los botones de lupa.
+En móvil/tableta la gráfica empieza en modo «desplazar» (no atrapa el dedo, así la página se puede subir y bajar);
+el botón «☝ Mover la gráfica» activa el giro / movimiento con un dedo, y «⇅ Desplazar la página» vuelve al modo anterior.
 
 El botón «Pantalla completa» de Streamlit vuelve a crear la gráfica y el zoom se pierde. Aquí la gráfica vive en
 un iframe con Plotly.js y el botón solo cambia su tamaño (la misma gráfica, sin recrearla), así la cámara y el
@@ -39,10 +41,16 @@ _PLANTILLA = """<!doctype html>
   .zb:active {{ background: rgba(0,245,255,.35); }}
   .zb svg {{ width: 24px; height: 24px; }}
   #aviso {{ position: absolute; left: 10px; top: 10px; color: #ff6b6b; font: 13px sans-serif; z-index: 60; }}
+  /* Móvil/tableta: por defecto la gráfica NO captura el dedo (así la página se puede desplazar); un botón la activa.
+     Los botones de lupa, «Pantalla completa» y los demás siguen funcionando en ese modo. */
+  #modo {{ position: absolute; left: 10px; top: 10px; z-index: 55; padding: 8px 14px; font-size: 13px; }}
+  #modo[hidden] {{ display: none; }}
+  #caja.desplazar #grafica {{ pointer-events: none; }}
 </style></head>
 <body>
 <div id="caja">
   {grafica}
+  <button id="modo" class="bt" hidden></button>
   <button id="pc" title="Pantalla completa (Esc para salir)">⛶ Pantalla completa</button>
   <div id="zoom">
     <button class="zb" id="zmas" title="Acercar (hacer más grande)" aria-label="Acercar">
@@ -104,22 +112,36 @@ _PLANTILLA = """<!doctype html>
 
   // ---- Pantallas táctiles: sin pellizco (los dos dedos volvían loco el zoom); un dedo gira/mueve la gráfica.
   var tactil = (navigator.maxTouchPoints > 0) || (window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
+  // «movil» = solo dedo (sin mouse): ahí la gráfica empieza en modo «desplazar». Portátiles táctiles con mouse no se ven afectados.
+  var movil = !!(window.matchMedia && window.matchMedia("(hover: none) and (pointer: coarse)").matches);
+  var modoMover = false, modo = document.getElementById("modo");
+  function aplicarModo() {{
+    var completa = enPantallaCompleta();
+    var desplazar = movil && !completa && !modoMover;           // en pantalla completa siempre se puede mover la gráfica
+    caja.classList.toggle("desplazar", desplazar);
+    caja.style.touchAction = (tactil && !desplazar) ? "none" : "";   // «none» solo mientras se mueve la gráfica
+    modo.hidden = !movil || completa;
+    modo.textContent = modoMover ? "⇅ Desplazar la página" : "☝ Mover la gráfica";
+    modo.classList.toggle("on", modoMover);
+  }}
+  modo.addEventListener("click", function () {{ modoMover = !modoMover; aplicarModo(); }});
   if (tactil) {{
-    caja.style.touchAction = "none";                          // el navegador no hace zoom ni desplaza la página sobre la gráfica
     ["touchstart", "touchmove"].forEach(function (ev) {{
       caja.addEventListener(ev, function (e) {{
-        if (e.touches && e.touches.length > 1) {{ e.stopPropagation(); e.preventDefault(); }}
+        if (!caja.classList.contains("desplazar") && e.touches && e.touches.length > 1) {{ e.stopPropagation(); e.preventDefault(); }}
       }}, {{ capture: true, passive: false }});
     }});
     ["gesturestart", "gesturechange", "gestureend"].forEach(function (ev) {{      // iOS Safari
-      caja.addEventListener(ev, function (e) {{ e.preventDefault(); }}, {{ passive: false }});
+      caja.addEventListener(ev, function (e) {{ if (!caja.classList.contains("desplazar")) e.preventDefault(); }}, {{ passive: false }});
     }});
   }}
+  aplicarModo();
 
   function actualizarBoton() {{
     pc.textContent = enPantallaCompleta() ? "✕ Salir de pantalla completa" : "⛶ Pantalla completa";
   }}
   function alCambiarPantalla() {{
+    aplicarModo();
     actualizarBoton();
     ajustar();
     setTimeout(ajustar, 150); setTimeout(ajustar, 500);      // por si el navegador termina de agrandar después
