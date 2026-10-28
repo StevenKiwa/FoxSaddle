@@ -1,13 +1,18 @@
-"""Conexión con la IA (Gemini): clave, modelos de respaldo, streaming y cupo de preguntas por sesión."""
+"""Conexión con la IA (Gemini): clave, modelos de respaldo, streaming y cupo de preguntas por sesión.
+
+Usa la API nativa de Gemini (no la compatible con OpenAI): así funcionan tanto las claves antiguas (AIza...)
+como las nuevas (AQ....) de Google AI Studio, con las que la ruta compatible con OpenAI da errores.
+"""
+import json
 import os
 import time
 from pathlib import Path
 
+import requests
 import streamlit as st
-from openai import OpenAI
 
 # ------------------------------------------------------------------ IA (Gemini)
-GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta"
 MODELO_DEFECTO = "gemini-flash-latest"   # alias del modelo Flash vigente; se puede cambiar en secrets (GEMINI_MODEL)
 SISTEMA = ("Eres un tutor de Matemática II (límites y derivadas parciales de funciones de varias variables). "
            "Explica en español, de forma amplia y paso a paso: primero la idea general, luego cada paso con su "
@@ -79,9 +84,38 @@ def _transitorio(e):
     return any(c in txt for c in ("503", "429", "500", "UNAVAILABLE", "imeout", "timed out"))
 
 
-def _cliente():
-    # sin reintentos internos (los hacemos nosotros, más rápido) y con tiempo máximo de espera
-    return OpenAI(base_url=GEMINI_URL, api_key=clave_gemini(), max_retries=0, timeout=40)
+def _contenidos(mensajes):
+    """Convierte el historial {role, content} al formato nativo de Gemini (user / model)."""
+    return [{"role": "model" if m["role"] == "assistant" else "user", "parts": [{"text": m["content"]}]}
+            for m in mensajes]
+
+
+def _flujo_modelo(modelo, mensajes):
+    """Respuesta por trozos desde la API nativa de Gemini; la clave viaja en la cabecera x-goog-api-key."""
+    url = f"{GEMINI_URL}/models/{modelo}:streamGenerateContent"
+    cuerpo = {"systemInstruction": {"parts": [{"text": SISTEMA}]}, "contents": _contenidos(mensajes)}
+    with requests.post(url, params={"alt": "sse"}, json=cuerpo, stream=True, timeout=(10, 40),
+                       headers={"x-goog-api-key": clave_gemini()}) as r:
+        if r.status_code != 200:
+            raise RuntimeError(f"HTTP {r.status_code}: {r.text[:300]}")
+        hubo_texto = False
+        for linea in r.iter_lines():
+            if not linea.startswith(b"data:"):
+                continue
+            dato = linea[5:].strip()
+            if not dato:
+                continue
+            try:
+                trozo = json.loads(dato.decode("utf-8"))
+            except ValueError:
+                continue
+            for cand in trozo.get("candidates", []):
+                for parte in (cand.get("content") or {}).get("parts", []):
+                    if parte.get("text") and not parte.get("thought"):
+                        hubo_texto = True
+                        yield parte["text"]
+        if not hubo_texto:
+            raise RuntimeError("HTTP 200: la IA devolvió una respuesta vacía")
 
 
 def flujo_ia(mensajes):
@@ -91,16 +125,14 @@ def flujo_ia(mensajes):
         for intento in range(2):
             emitido = False
             try:
-                flujo = _cliente().chat.completions.create(
-                    model=modelo, stream=True,
-                    messages=[{"role": "system", "content": SISTEMA}] + mensajes[-12:])
-                for trozo in flujo:
-                    if trozo.choices and trozo.choices[0].delta.content:
-                        emitido = True
-                        yield trozo.choices[0].delta.content
+                for texto in _flujo_modelo(modelo, mensajes[-12:]):
+                    emitido = True
+                    yield texto
                 return
             except Exception as e:
                 ultimo = e
+                # Queda en los registros de la app (solo los ve quien administra el repositorio); nunca incluye la clave.
+                print(f"[IA] modelo={modelo} intento={intento + 1}: {str(e)[:300]}", flush=True)
                 if emitido or not _transitorio(e):
                     raise
                 if intento == 0:
