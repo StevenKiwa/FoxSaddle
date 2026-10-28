@@ -11,4 +11,5 @@ def grafica_2d_3d(ctx):
     # gráfica 3D se agranda sola (ver graficas.py) para que los números de los ejes sigan legibles.
     rango = st.slider("Rango de visualización (unidades)", 1, 50, 3, 1)
     graficas_duales(f, a, b, rango)
-    st.caption("Gira con el mouse, acerca con la rueda. Ejes: x magenta, y lima, z cian. Punto lima: (a, b, f(a,b)).")
+    st.caption("Gira con el mouse, acerca con la rueda (en el celular, toca « Mover la gráfica»). "
+               "Ejes: x magenta, y lima, z cian. Punto lima: (a, b, f(a,b)).")
