@@ -1,0 +1,9 @@
+
+.streamlit/secrets.toml
+clave_gemini.txt
+.env
+__pycache__/
+*.pyc
+.idea/
+venv/
+.venv/
