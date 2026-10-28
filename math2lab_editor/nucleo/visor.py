@@ -121,7 +121,7 @@ _PLANTILLA = """<!doctype html>
     caja.classList.toggle("desplazar", desplazar);
     caja.style.touchAction = (tactil && !desplazar) ? "none" : "";   // «none» solo mientras se mueve la gráfica
     modo.hidden = !movil || completa;
-    modo.textContent = modoMover ? "⇅ Desplazar la página" : "☝ Mover la gráfica";
+    modo.textContent = modoMover ? "⇅ Desplazar la página" : " Mover gráfica";
     modo.classList.toggle("on", modoMover);
   }}
   modo.addEventListener("click", function () {{ modoMover = !modoMover; aplicarModo(); }});
