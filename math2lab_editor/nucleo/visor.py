@@ -1,15 +1,4 @@
-"""Visor propio de gráficas Plotly con botón de pantalla completa que conserva el zoom del usuario.
 
-La barra de herramientas de Plotly está oculta: los únicos controles son «Pantalla completa», «Decimales», «Curvas de
-nivel» (solo en 3D) y los botones de lupa (+ / −) de la esquina superior derecha. En pantallas táctiles el pellizco con
-dos dedos se bloquea, porque hacía que el zoom «se volviera loco»: el zoom se hace con los botones de lupa.
-En móvil/tableta la gráfica empieza en modo «desplazar» (no atrapa el dedo, así la página se puede subir y bajar);
-el botón «☝ Mover la gráfica» activa el giro / movimiento con un dedo, y «⇅ Desplazar la página» vuelve al modo anterior.
-
-El botón «Pantalla completa» de Streamlit vuelve a crear la gráfica y el zoom se pierde. Aquí la gráfica vive en
-un iframe con Plotly.js y el botón solo cambia su tamaño (la misma gráfica, sin recrearla), así la cámara y el
-zoom quedan exactamente donde los dejó el usuario. Plotly.js se descarga de internet (CDN) al abrir la página.
-"""
 import json
 
 import plotly.graph_objects as go
