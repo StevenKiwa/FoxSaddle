@@ -12,7 +12,9 @@ _PLANTILLA = """<!doctype html>
   #caja {{ position: relative; box-sizing: border-box; background: #0a0a12; border: 1px solid rgba(0,245,255,.25); border-radius: 10px;
            box-shadow: 0 0 14px rgba(0,245,255,.15); overflow: hidden; }}
   #caja:fullscreen {{ border: none; border-radius: 0; box-shadow: none; }}
-  #pc {{ position: absolute; left: 10px; bottom: 10px; z-index: 50; background: #12121f; color: #00f5ff;
+  #izq {{ position: absolute; left: 10px; bottom: 10px; z-index: 50; display: flex; flex-direction: column;
+          align-items: flex-start; gap: 6px; }}
+  #pc {{ background: #12121f; color: #00f5ff;
          border: 1px solid #00f5ff; border-radius: 6px; padding: 4px 10px; font: 12px Inter, "Segoe UI", sans-serif;
          cursor: pointer; box-shadow: 0 0 8px rgba(0,245,255,.35); }}
   #pc:hover {{ background: rgba(0,245,255,.15); box-shadow: 0 0 14px rgba(0,245,255,.8); }}
@@ -32,15 +34,17 @@ _PLANTILLA = """<!doctype html>
   #aviso {{ position: absolute; left: 10px; top: 10px; color: #ff6b6b; font: 13px sans-serif; z-index: 60; }}
   /* Móvil/tableta: por defecto la gráfica NO captura el dedo (así la página se puede desplazar); un botón la activa.
      Los botones de lupa, «Pantalla completa» y los demás siguen funcionando en ese modo. */
-  #modo {{ position: absolute; left: 10px; top: 10px; z-index: 55; padding: 8px 14px; font-size: 13px; }}
+  #modo {{ padding: 8px 14px; font-size: 13px; }}
   #modo[hidden] {{ display: none; }}
   #caja.desplazar #grafica {{ pointer-events: none; }}
 </style></head>
 <body>
 <div id="caja">
   {grafica}
-  <button id="modo" class="bt" hidden></button>
-  <button id="pc" title="Pantalla completa (Esc para salir)">⛶ Pantalla completa</button>
+  <div id="izq">
+    <button id="modo" class="bt" hidden></button>
+    <button id="pc" title="Pantalla completa (Esc para salir)">⛶ Pantalla completa</button>
+  </div>
   <div id="zoom">
     <button class="zb" id="zmas" title="Acercar (hacer más grande)" aria-label="Acercar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -63,8 +67,6 @@ _PLANTILLA = """<!doctype html>
   var ultimoAncho = 0, ultimoAlto = 0;
   function enPantallaCompleta() {{ return document.fullscreenElement === caja || document.webkitFullscreenElement === caja; }}
 
-  // Ajusta la gráfica al tamaño REAL del recuadro (no al de la ventana, que aún puede estar cambiando).
-  // Solo cambia el tamaño: es la misma gráfica, así que la cámara y el zoom del usuario no se tocan.
   function ajustar() {{
     if (!(window.Plotly && gd && gd.layout)) return;
     var completa = enPantallaCompleta();
@@ -76,20 +78,20 @@ _PLANTILLA = """<!doctype html>
     Plotly.relayout(gd, {{ width: ancho, height: alto }});
   }}
   // ---- Zoom con los botones de lupa. f < 1 acerca (más grande), f > 1 aleja (más pequeño).
-  var escala2D = 1;                                           // zoom acumulado en las gráficas 2D (1 = vista inicial)
+  var escala2D = 1;                                           
   function lista() {{ return window.Plotly && gd && gd.layout && gd._fullLayout; }}
-  function camaraActual() {{                                  // cámara 3D vigente (incluye lo que giró el usuario)
+  function camaraActual() {{                                  
     try {{ var c = gd._fullLayout.scene._scene.getCamera(); if (c && c.eye) return c; }} catch (e) {{}}
     var cam = (gd.layout.scene && gd.layout.scene.camera) || {{}};
     return {{ eye: cam.eye || {{ x: 1.6, y: -1.6, z: 1.0 }}, up: cam.up || {{ x: 0, y: 0, z: 1 }}, center: cam.center || {{ x: 0, y: 0, z: 0 }} }};
   }}
   function zoom(f) {{
     if (!lista()) return;
-    if (gd._fullLayout.scene) {{                              // 3D: acercar o alejar la cámara conservando hacia dónde mira
+    if (gd._fullLayout.scene) {{                              
       var c = camaraActual(), e = c.eye, n = Math.sqrt(e.x * e.x + e.y * e.y + e.z * e.z) || 1;
-      var k = Math.min(Math.max(n * f, 0.35), 8) / n;         // distancia limitada: ni dentro del modelo ni perdido
+      var k = Math.min(Math.max(n * f, 0.35), 8) / n;         
       Plotly.relayout(gd, {{ "scene.camera": {{ eye: {{ x: e.x * k, y: e.y * k, z: e.z * k }}, up: c.up, center: c.center }} }});
-    }} else {{                                                // 2D: se reducen o amplían los rangos de los ejes, alrededor de su centro
+    }} else {{                                                
       var nueva = Math.min(Math.max(escala2D * f, 0.04), 25);
       var g = nueva / escala2D; escala2D = nueva;
       function escalar(r) {{ var m = (r[0] + r[1]) / 2, h = (r[1] - r[0]) / 2 * g; return [m - h, m + h]; }}
@@ -106,11 +108,11 @@ _PLANTILLA = """<!doctype html>
   var modoMover = false, modo = document.getElementById("modo");
   function aplicarModo() {{
     var completa = enPantallaCompleta();
-    var desplazar = movil && !completa && !modoMover;           // en pantalla completa siempre se puede mover la gráfica
+    var desplazar = movil && !completa && !modoMover;         
     caja.classList.toggle("desplazar", desplazar);
-    caja.style.touchAction = (tactil && !desplazar) ? "none" : "";   // «none» solo mientras se mueve la gráfica
+    caja.style.touchAction = (tactil && !desplazar) ? "none" : "";  
     modo.hidden = !movil || completa;
-    modo.textContent = modoMover ? "⇅ Desplazar la página" : " Mover gráfica";
+    modo.textContent = modoMover ? "⇅ Desplazar la página" : "Mover la gráfica";
     modo.classList.toggle("on", modoMover);
   }}
   modo.addEventListener("click", function () {{ modoMover = !modoMover; aplicarModo(); }});
@@ -120,7 +122,7 @@ _PLANTILLA = """<!doctype html>
         if (!caja.classList.contains("desplazar") && e.touches && e.touches.length > 1) {{ e.stopPropagation(); e.preventDefault(); }}
       }}, {{ capture: true, passive: false }});
     }});
-    ["gesturestart", "gesturechange", "gestureend"].forEach(function (ev) {{      // iOS Safari
+    ["gesturestart", "gesturechange", "gestureend"].forEach(function (ev) {{      
       caja.addEventListener(ev, function (e) {{ if (!caja.classList.contains("desplazar")) e.preventDefault(); }}, {{ passive: false }});
     }});
   }}
@@ -133,7 +135,7 @@ _PLANTILLA = """<!doctype html>
     aplicarModo();
     actualizarBoton();
     ajustar();
-    setTimeout(ajustar, 150); setTimeout(ajustar, 500);      // por si el navegador termina de agrandar después
+    setTimeout(ajustar, 150); setTimeout(ajustar, 500);     
   }}
   pc.addEventListener("click", function () {{
     try {{
@@ -141,8 +143,7 @@ _PLANTILLA = """<!doctype html>
       else {{ (caja.requestFullscreen || caja.webkitRequestFullscreen).call(caja); }}
     }} catch (e) {{ document.getElementById("aviso").textContent = "El navegador no permitió la pantalla completa."; }}
   }});
-  // Botones propios (arriba el primero): posición fija en píxeles, no dependen del tamaño de la gráfica.
-  // Cada uno alterna entre args (activar) y args2 (desactivar) y empieza desactivado.
+
   function aplicarAccion(metodo, a) {{
     if (metodo === "restyle") Plotly.restyle(gd, a[0], a[1]);
     else if (metodo === "relayout") Plotly.relayout(gd, a[0]);
@@ -160,7 +161,7 @@ _PLANTILLA = """<!doctype html>
   }});
   document.addEventListener("fullscreenchange", alCambiarPantalla);
   document.addEventListener("webkitfullscreenchange", alCambiarPantalla);
-  new ResizeObserver(ajustar).observe(caja);                  // también si cambia el ancho de la columna
+  new ResizeObserver(ajustar).observe(caja);             
   window.addEventListener("resize", ajustar);
   window.addEventListener("load", function () {{ setTimeout(ajustar, 200); }});
   setTimeout(function () {{
@@ -172,7 +173,7 @@ _PLANTILLA = """<!doctype html>
 
 
 def _extraer_botones(fig):
-    """Botones de la figura (updatemenus) como lista simple: etiqueta, método y argumentos de activar/desactivar."""
+
     botones = []
     for menu in fig.to_plotly_json()["layout"].get("updatemenus", []) or []:
         for b in menu.get("buttons", []):
@@ -182,13 +183,12 @@ def _extraer_botones(fig):
 
 
 def visor_plotly(fig, altura):
-    """Dibuja la figura de Plotly en un iframe con botón de pantalla completa que conserva el zoom.
-    Los botones de la figura se dibujan como botones HTML fijos en la esquina inferior derecha."""
+
     botones = _extraer_botones(fig)
     limpia = go.Figure(fig)
-    limpia.layout.updatemenus = []      # asignación directa: update_layout(updatemenus=[]) NO borra los existentes
+    limpia.layout.updatemenus = []     
     if "scene" not in fig.to_plotly_json()["layout"]:
-        limpia.layout.dragmode = "pan"  # 2D: con el dedo o el mouse se mueve la gráfica (el zoom va con las lupas)
+        limpia.layout.dragmode = "pan"  
     cuerpo = limpia.to_html(full_html=False, include_plotlyjs="cdn", div_id="grafica", default_width="100%",
                             default_height=f"{altura}px", config={"displayModeBar": False, "displaylogo": False,
                                                      "responsive": True, "doubleClick": False})
