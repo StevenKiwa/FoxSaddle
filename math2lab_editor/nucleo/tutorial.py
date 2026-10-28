@@ -1,8 +1,6 @@
-"""Tutorial guiado de primera visita (se recuerda en el navegador con streamlit-js-eval)."""
+
 import streamlit as st
 
-# Para recordar que el usuario ya lo vio (aunque cierre el navegador) se usa el almacenamiento del navegador
-# con la librería streamlit-js-eval. Si no está instalada, el tutorial se ofrece en cada sesión nueva.
 try:
     from streamlit_js_eval import streamlit_js_eval
     HAY_LS = True
@@ -50,7 +48,6 @@ PASOS = [
 
 
 def _ya_visto():
-    """True/False según el navegador; None mientras se está leyendo."""
     if "tut_visto" in st.session_state:
         return st.session_state.tut_visto
     if HAY_LS:
@@ -67,13 +64,12 @@ def _ya_visto():
 def _cerrar_tutorial():
     st.session_state.tut_estado = "cerrado"
     st.session_state.tut_visto = True
-    st.session_state.tut_guardar = True      # se guarda en el navegador para no volver a ofrecerlo
-
+    st.session_state.tut_guardar = True      
 
 def _ir_paso(paso):
     paso = max(0, min(paso, len(PASOS) - 1))
     st.session_state.tut_paso = paso
-    st.session_state.seccion = PASOS[paso][0]    # el tutorial cambia de sección automáticamente
+    st.session_state.seccion = PASOS[paso][0]    
 
 
 def empezar_tutorial():
@@ -88,7 +84,7 @@ def tutorial():
     if "tut_estado" not in st.session_state:
         visto = _ya_visto()
         if visto is None:
-            return                               # todavía leyendo el navegador
+            return                          
         st.session_state.tut_estado = "cerrado" if visto else "oferta"
     estado = st.session_state.tut_estado
     if estado == "cerrado":
