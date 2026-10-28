@@ -44,5 +44,8 @@ def aplicar_css():
           box-shadow: 0 0 12px rgba(0,245,255,.2); }}
       [data-testid="stPlotlyChart"] {{ border: 1px solid rgba(0,245,255,.2); border-radius: 10px;
           box-shadow: 0 0 18px rgba(0,245,255,.12); overflow: hidden; }}
+      @media (max-width: 640px) {{      /* móvil vertical: márgenes laterales más anchos para poder desplazar la página con el dedo */
+        [data-testid="stMainBlockContainer"], .block-container {{ padding-left: 1.4rem !important; padding-right: 1.4rem !important; }}
+      }}
     </style>
     """, unsafe_allow_html=True)
