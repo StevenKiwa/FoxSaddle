@@ -1,4 +1,4 @@
-"""Registro de secciones: el orden de este diccionario es el del menú de la barra lateral."""
+
 from secciones.curvas_nivel import curvas_nivel
 from secciones.demostracion_formal import demostracion_formal
 from secciones.derivadas import derivadas
