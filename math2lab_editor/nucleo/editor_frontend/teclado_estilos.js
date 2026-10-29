@@ -3,9 +3,9 @@ const CSS_TECLADO = `
     font-family: Inter, "Segoe UI", sans-serif; -webkit-user-select: none; user-select: none; touch-action: manipulation;
     -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
 #m2l-teclado.m2l-visible { display: block; }
-#m2l-teclado.m2l-fijo { position: fixed; left: 0; right: 0; bottom: 0; z-index: 999990;
+#m2l-teclado.m2l-fijo { position: fixed; left: 0; right: 0; bottom: var(--m2l-base, 0px); z-index: 999990;
     border-top: 1px solid rgba(0,245,255,.45); box-shadow: 0 -4px 18px rgba(0,245,255,.22);
-    display: block; transform: translateY(100%); visibility: hidden; pointer-events: none;
+    display: block; transform: translateY(calc(100% + var(--m2l-base, 0px))); visibility: hidden; pointer-events: none;
     transition: transform .22s ease-out, visibility 0s linear .22s; will-change: transform; }
 #m2l-teclado.m2l-fijo.m2l-visible { transform: translateY(0); visibility: visible; pointer-events: auto;
     transition: transform .22s ease-out, visibility 0s; }
