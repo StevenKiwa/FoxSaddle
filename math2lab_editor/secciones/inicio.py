@@ -3,7 +3,6 @@ import streamlit as st
 
 from nucleo.graficas import graficas_duales
 
-
 def inicio(ctx):
     f, a, b = ctx.f, ctx.a, ctx.b           
     st.write("Plataforma interactiva para aprender **límites** y **derivadas parciales** de funciones de dos "
