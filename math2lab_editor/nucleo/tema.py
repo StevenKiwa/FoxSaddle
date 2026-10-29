@@ -1,11 +1,12 @@
+
 import streamlit as st
 
 CIAN, MAGENTA, LIMA, VIOLETA = "#00f5ff", "#ff2bd6", "#b6ff3b", "#8a5cff"
 FONDO, PANEL, GRILLA, TEXTO = "#0a0a12", "#12121f", "#1f1f33", "#e6e6f0"
-ESCALA_NEON = [[0.0, "#1a0b3d"], [0.35, "#5b1fd1"], [0.7, MAGENTA], [1.0, CIAN]]
-ESCALA_LINEAS = [[0.0, VIOLETA], [0.5, MAGENTA], [1.0, CIAN]]
-CELESTE_NEON = "#4AF7F3"
-OPACIDAD_3D = 0.30
+ESCALA_NEON = [[0.0, "#1a0b3d"], [0.35, "#5b1fd1"], [0.7, MAGENTA], [1.0, CIAN]]   
+ESCALA_LINEAS = [[0.0, VIOLETA], [0.5, MAGENTA], [1.0, CIAN]]                      
+CELESTE_NEON = "#4AF7F3"   
+OPACIDAD_3D = 0.30  
 ETIQUETAS = [("x", MAGENTA), ("-x", MAGENTA), ("y", LIMA), ("-y", LIMA), ("z", CIAN), ("-z", CIAN)]
 
 
@@ -16,6 +17,11 @@ def aplicar_css():
       html, body, .stApp {{ font-family: 'Inter', sans-serif; }}
       .stApp {{ background: {FONDO}; color: {TEXTO}; }}
       [data-testid="stHeader"] {{ background: transparent; }}
+      /* Elementos de la plataforma de alojamiento (menú, botón Deploy, icono de GitHub) que no se quieren mostrar.
+         Solo afecta a lo que está DENTRO de la app; la insignia «Hosted with Streamlit» la dibuja Streamlit Community Cloud
+         fuera de la app y no se puede ocultar desde aquí. */
+      #MainMenu, footer, #GithubIcon, .stAppDeployButton, [data-testid="stDeployButton"], [data-testid="stToolbarActions"],
+      [data-testid="stHeader"] a[href*="github.com"] {{ display: none !important; visibility: hidden !important; }}
       [data-testid="stSidebar"] {{ background: #0d0d18; border-right: 1px solid rgba(0,245,255,.18); }}
       h1, h2, h3 {{ color: {CIAN}; font-weight: 300; letter-spacing: 2px;
                     text-shadow: 0 0 14px rgba(0,245,255,.55); }}
@@ -42,8 +48,5 @@ def aplicar_css():
           box-shadow: 0 0 12px rgba(0,245,255,.2); }}
       [data-testid="stPlotlyChart"] {{ border: 1px solid rgba(0,245,255,.2); border-radius: 10px;
           box-shadow: 0 0 18px rgba(0,245,255,.12); overflow: hidden; }}
-      @media (max-width: 640px) {{
-        [data-testid="stMainBlockContainer"], .block-container {{ padding-left: 1.4rem !important; padding-right: 1.4rem !important; }}
-      }}
     </style>
     """, unsafe_allow_html=True)
