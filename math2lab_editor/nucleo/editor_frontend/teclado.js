@@ -83,6 +83,8 @@ function crearTeclado({ mf, contenedor, estaListo, marcar, aplicar, altura }) {
     teclado = doc.createElement("div");
     teclado.id = "m2l-teclado";
     teclado.className = P ? "m2l-fijo" : "m2l-embebido";
+    ["pointerdown", "mousedown"].forEach((ev) => teclado.addEventListener(ev, frenar));
+    teclado.addEventListener("touchstart", frenar, { passive: false });
     const dentro = doc.createElement("div");
     dentro.className = "m2l-in";
     teclado.appendChild(dentro);
