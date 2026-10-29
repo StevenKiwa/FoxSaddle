@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Editor de fórmulas Math2Lab</title>
+<link rel="stylesheet" href="editor.css">
+<script defer src="https://cdn.jsdelivr.net/npm/mathlive"></script>
+</head>
+<body>
+<div id="contenedor">
+  <div id="fila">
+    <math-field id="mf"></math-field>
+    <button id="aplicar" title="Enter">Aplicar ✓</button>
+  </div>
+  <div id="estado">Escribe con el teclado: <b>/</b> crea una fracción, <b>^</b> una potencia, <b>sqrt</b> una raíz. Pulsa Enter para aplicar.</div>
+</div>
+<script src="teclado_estilos.js"></script>
+<script src="teclado.js"></script>
+<script src="editor.js"></script>
+</body>
+</html>

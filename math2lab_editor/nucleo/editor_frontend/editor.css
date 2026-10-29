@@ -1,0 +1,15 @@
+html, body { margin: 0; padding: 0; height: auto; overflow: hidden; background: transparent; font-family: Inter, "Segoe UI", sans-serif; color: #e6e6f0; }
+#contenedor { padding-bottom: 6px; }
+#fila { display: flex; gap: 8px; align-items: stretch; }
+math-field { flex: 1; min-width: 0; font-size: 30px; padding: 10px 14px; background: #12121f; color: #e6e6f0;
+             border: 1px solid #00f5ff; border-radius: 10px; box-shadow: 0 0 12px rgba(0,245,255,.35);
+             --primary-color: #e6e6f0; --caret-color: #ff2bd6; --selection-background-color: rgba(255,43,214,.35);
+             --text-font-family: "Times New Roman", serif; }
+math-field:focus-within { outline: none; border-color: #ff2bd6; box-shadow: 0 0 14px rgba(255,43,214,.7); }
+math-field::part(virtual-keyboard-toggle), math-field::part(menu-toggle) { display: none; }
+#aplicar { background: transparent; color: #00f5ff; border: 1px solid #00f5ff; border-radius: 10px; padding: 0 20px;
+           font-size: 15px; cursor: pointer; box-shadow: 0 0 10px rgba(0,245,255,.35); transition: all .2s; }
+#aplicar:hover { background: rgba(0,245,255,.12); box-shadow: 0 0 18px rgba(0,245,255,.85); }
+#estado { font-size: 13px; margin-top: 7px; min-height: 18px; color: #9aa0b8; }
+#estado.pendiente { color: #ff2bd6; }
+#estado.fallo { color: #ff6b6b; }
