@@ -9,6 +9,9 @@ const CSS_TECLADO = `
     transition: transform .22s ease-out, visibility 0s linear .22s; will-change: transform; }
 #m2l-teclado.m2l-fijo.m2l-visible { transform: translateY(0); visibility: visible; pointer-events: auto;
     transition: transform .22s ease-out, visibility 0s; }
+#m2l-teclado.m2l-fijo::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: var(--m2l-base, 0px);
+    background: linear-gradient(180deg, rgba(74,247,243,.55), rgba(74,247,243,.22)), #0a0a12;
+    border-top: 1px solid #4AF7F3; box-shadow: 0 0 16px rgba(74,247,243,.45); box-sizing: border-box; }
 @media (prefers-reduced-motion: reduce) {
   #m2l-teclado.m2l-fijo, #m2l-teclado.m2l-fijo.m2l-visible { transition: none; }
 }
