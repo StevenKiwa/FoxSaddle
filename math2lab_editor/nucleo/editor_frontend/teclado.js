@@ -18,6 +18,7 @@ const NUMEROS = "1234567890";
 const FILA_Q = "qwertyuiop";
 const FILA_A = "asdfghjkl";
 const FILA_Z = "zxcvbnm";
+const INSIGNIA_ALTO = 56;
 
 function crearTeclado({ mf, contenedor, estaListo, marcar, aplicar, altura }) {
   let P = null;
@@ -25,6 +26,7 @@ function crearTeclado({ mf, contenedor, estaListo, marcar, aplicar, altura }) {
   const doc = P || document;
   const principal = () => P.querySelector('[data-testid="stMain"]') || P.querySelector("section.main");
   let teclado = null, estilo = null, visible = false, tocandoHasta = 0, espera = null, repeticion = null;
+  let intervaloLateral = null, baseInferior = 0;
 
   const sinTecladoNativo = () => {
     try { mf.setAttribute("inputmode", "none"); } catch (e) {}
@@ -108,7 +110,30 @@ function crearTeclado({ mf, contenedor, estaListo, marcar, aplicar, altura }) {
     const main = P && principal();
     if (!main) return;
     main.style.transition = "padding-bottom .22s ease-out";
-    main.style.paddingBottom = activo ? teclado.offsetHeight + "px" : "";
+    main.style.paddingBottom = activo ? (teclado.offsetHeight + baseInferior) + "px" : "";
+  }
+
+  function ajustarIzquierda() {
+    if (!P || !teclado) return;
+    let izq = 0;
+    try {
+      const lateral = P.querySelector('[data-testid="stSidebar"]');
+      if (lateral && P.defaultView.innerWidth > 640) {
+        const r = lateral.getBoundingClientRect();
+        if (r.width > 0 && r.right > 0) izq = Math.round(r.right);
+      }
+    } catch (e) {}
+    if (teclado.style.left !== izq + "px") teclado.style.left = izq + "px";
+    let base = 0;
+    try {
+      const enNube = /\.streamlit\.app$/i.test(window.location.hostname);
+      if (enNube && P.defaultView.innerWidth - izq < 1300) base = INSIGNIA_ALTO;
+    } catch (e) {}
+    if (base !== baseInferior) {
+      baseInferior = base;
+      teclado.style.setProperty("--m2l-base", base + "px");
+      if (visible) reservarEspacio(true);
+    }
   }
 
   function asegurarVisible() {
@@ -131,6 +156,9 @@ function crearTeclado({ mf, contenedor, estaListo, marcar, aplicar, altura }) {
     if (visible || !teclado) return;
     visible = true;
     teclado.classList.add("m2l-visible");
+    ajustarIzquierda();
+    clearInterval(intervaloLateral);
+    intervaloLateral = setInterval(ajustarIzquierda, 120);
     reservarEspacio(true);
     asegurarVisible();
     altura();
@@ -140,12 +168,13 @@ function crearTeclado({ mf, contenedor, estaListo, marcar, aplicar, altura }) {
     if (!visible || !teclado) return;
     visible = false;
     teclado.classList.remove("m2l-visible");
+    clearInterval(intervaloLateral);
     reservarEspacio(false);
     altura();
   }
 
   const alCambiarTamano = () => {
-    if (visible) setTimeout(() => { reservarEspacio(true); asegurarVisible(); }, 120);
+    if (visible) setTimeout(() => { ajustarIzquierda(); reservarEspacio(true); asegurarVisible(); }, 120);
   };
   const revisarFoco = () => setTimeout(() => {
     if (Date.now() >= tocandoHasta && (!document.hasFocus() || document.activeElement !== mf)) ocultar();
@@ -158,6 +187,7 @@ function crearTeclado({ mf, contenedor, estaListo, marcar, aplicar, altura }) {
   function retirar() {
     try {
       detenerRepeticion();
+      clearInterval(intervaloLateral);
       reservarEspacio(false);
       if (P) {
         P.removeEventListener("pointerdown", tocoFuera, true);
