@@ -1,4 +1,5 @@
 
+from secciones.creditos import creditos
 from secciones.curvas_nivel import curvas_nivel
 from secciones.demostracion_formal import demostracion_formal
 from secciones.derivadas import derivadas
@@ -19,4 +20,5 @@ SECCIONES = {
     "Demostración ε-δ": demostracion_formal,
     "Derivadas parciales": derivadas,
     "Tutor IA": tutor_ia,
+    "Créditos": creditos,
 }
